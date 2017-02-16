@@ -3,6 +3,7 @@
 [![Tests](https://github.com/philiprehberger/rb-metric-units/actions/workflows/ci.yml/badge.svg)](https://github.com/philiprehberger/rb-metric-units/actions/workflows/ci.yml)
 [![Gem Version](https://badge.fury.io/rb/philiprehberger-metric_units.svg)](https://rubygems.org/gems/philiprehberger-metric_units)
 [![License](https://img.shields.io/github/license/philiprehberger/rb-metric-units)](LICENSE)
+[![Sponsor](https://img.shields.io/badge/sponsor-GitHub%20Sponsors-ec6cb9)](https://github.com/sponsors/philiprehberger)
 
 Unit conversion for length, weight, temperature, and volume measurements
 
