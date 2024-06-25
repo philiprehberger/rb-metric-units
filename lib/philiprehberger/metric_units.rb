@@ -65,6 +65,21 @@ module Philiprehberger
       btu: 1055.06
     }.freeze
 
+    # Data: base = bytes. Includes both decimal (SI) and binary (IEC) units.
+    DATA_FACTORS = {
+      bytes: 1.0,
+      kilobytes: 1_000.0,
+      megabytes: 1_000_000.0,
+      gigabytes: 1_000_000_000.0,
+      terabytes: 1_000_000_000_000.0,
+      petabytes: 1_000_000_000_000_000.0,
+      kibibytes: 1024.0,
+      mebibytes: 1_048_576.0,
+      gibibytes: 1_073_741_824.0,
+      tebibytes: 1_099_511_627_776.0,
+      pebibytes: 1_125_899_906_842_624.0
+    }.freeze
+
     TEMPERATURE_UNITS = %i[celsius fahrenheit kelvin].freeze
 
     CATEGORY_MAP = {
@@ -74,7 +89,8 @@ module Philiprehberger
       temperature: nil,
       speed: SPEED_FACTORS,
       pressure: PRESSURE_FACTORS,
-      energy: ENERGY_FACTORS
+      energy: ENERGY_FACTORS,
+      data: DATA_FACTORS
     }.freeze
 
     ABBREVIATIONS = {
@@ -97,8 +113,82 @@ module Philiprehberger
       # Energy
       joules: 'J', kilojoules: 'kJ', calories: 'cal',
       kilocalories: 'kcal', watt_hours: 'Wh',
-      kilowatt_hours: 'kWh', btu: 'BTU'
+      kilowatt_hours: 'kWh', btu: 'BTU',
+      # Data
+      bytes: 'B', kilobytes: 'kB', megabytes: 'MB',
+      gigabytes: 'GB', terabytes: 'TB', petabytes: 'PB',
+      kibibytes: 'KiB', mebibytes: 'MiB', gibibytes: 'GiB',
+      tebibytes: 'TiB', pebibytes: 'PiB'
     }.freeze
+
+    # Alias map: any token a user might write (symbols, abbreviations, plurals)
+    # mapped to the canonical unit symbol used by the CATEGORY_MAP.
+    ALIASES = {
+      # Length
+      'kilometer' => :km, 'kilometers' => :km, 'kilometre' => :km, 'kilometres' => :km, 'km' => :km,
+      'meter' => :m, 'meters' => :m, 'metre' => :m, 'metres' => :m, 'm' => :m,
+      'centimeter' => :cm, 'centimeters' => :cm, 'cm' => :cm,
+      'millimeter' => :mm, 'millimeters' => :mm, 'mm' => :mm,
+      'mile' => :miles, 'miles' => :miles, 'mi' => :miles,
+      'yard' => :yards, 'yards' => :yards, 'yd' => :yards,
+      'foot' => :feet, 'feet' => :feet, 'ft' => :feet,
+      'inch' => :inches, 'inches' => :inches, 'in' => :inches,
+      # Weight
+      'kilogram' => :kg, 'kilograms' => :kg, 'kg' => :kg,
+      'gram' => :g, 'grams' => :g, 'g' => :g,
+      'milligram' => :mg, 'milligrams' => :mg, 'mg' => :mg,
+      'pound' => :lbs, 'pounds' => :lbs, 'lb' => :lbs, 'lbs' => :lbs,
+      'ounce' => :oz, 'ounces' => :oz, 'oz' => :oz,
+      # Volume
+      'liter' => :liters, 'liters' => :liters, 'litre' => :liters,
+      'litres' => :liters, 'l' => :liters,
+      'milliliter' => :ml, 'milliliters' => :ml, 'ml' => :ml,
+      'gallon' => :gallons, 'gallons' => :gallons, 'gal' => :gallons,
+      'quart' => :quarts, 'quarts' => :quarts, 'qt' => :quarts,
+      'pint' => :pints, 'pints' => :pints, 'pt' => :pints,
+      'cup' => :cups, 'cups' => :cups,
+      # Temperature
+      'c' => :celsius, 'celsius' => :celsius, "\u00B0c" => :celsius,
+      'f' => :fahrenheit, 'fahrenheit' => :fahrenheit, "\u00B0f" => :fahrenheit,
+      'k' => :kelvin, 'kelvin' => :kelvin,
+      # Speed
+      'm/s' => :meters_per_second, 'mps' => :meters_per_second,
+      'km/h' => :kilometers_per_hour, 'kph' => :kilometers_per_hour, 'kmh' => :kilometers_per_hour,
+      'mph' => :miles_per_hour, 'mi/h' => :miles_per_hour,
+      'kn' => :knots, 'kt' => :knots, 'knot' => :knots, 'knots' => :knots,
+      'ft/s' => :feet_per_second, 'fps' => :feet_per_second,
+      # Pressure
+      'pa' => :pascals, 'pascal' => :pascals, 'pascals' => :pascals,
+      'kpa' => :kilopascals, 'kilopascal' => :kilopascals, 'kilopascals' => :kilopascals,
+      'bar' => :bar, 'bars' => :bar,
+      'psi' => :psi,
+      'atm' => :atmospheres, 'atmosphere' => :atmospheres, 'atmospheres' => :atmospheres,
+      'mmhg' => :mmhg, 'torr' => :mmhg,
+      # Energy
+      'j' => :joules, 'joule' => :joules, 'joules' => :joules,
+      'kj' => :kilojoules, 'kilojoule' => :kilojoules, 'kilojoules' => :kilojoules,
+      'cal' => :calories, 'calorie' => :calories, 'calories' => :calories,
+      'kcal' => :kilocalories, 'kilocalorie' => :kilocalories, 'kilocalories' => :kilocalories,
+      'wh' => :watt_hours, 'watt_hour' => :watt_hours, 'watt_hours' => :watt_hours,
+      'kwh' => :kilowatt_hours, 'kilowatt_hour' => :kilowatt_hours, 'kilowatt_hours' => :kilowatt_hours,
+      'btu' => :btu,
+      # Data
+      'b' => :bytes, 'byte' => :bytes, 'bytes' => :bytes,
+      'kb' => :kilobytes, 'kilobyte' => :kilobytes, 'kilobytes' => :kilobytes,
+      'mb' => :megabytes, 'megabyte' => :megabytes, 'megabytes' => :megabytes,
+      'gb' => :gigabytes, 'gigabyte' => :gigabytes, 'gigabytes' => :gigabytes,
+      'tb' => :terabytes, 'terabyte' => :terabytes, 'terabytes' => :terabytes,
+      'pb' => :petabytes, 'petabyte' => :petabytes, 'petabytes' => :petabytes,
+      'kib' => :kibibytes, 'kibibyte' => :kibibytes, 'kibibytes' => :kibibytes,
+      'mib' => :mebibytes, 'mebibyte' => :mebibytes, 'mebibytes' => :mebibytes,
+      'gib' => :gibibytes, 'gibibyte' => :gibibytes, 'gibibytes' => :gibibytes,
+      'tib' => :tebibytes, 'tebibyte' => :tebibytes, 'tebibytes' => :tebibytes,
+      'pib' => :pebibytes, 'pebibyte' => :pebibytes, 'pebibytes' => :pebibytes
+    }.freeze
+
+    # Ordered scales used by .humanize_bytes for auto-scaling
+    HUMANIZE_BYTES_DECIMAL = %i[bytes kilobytes megabytes gigabytes terabytes petabytes].freeze
+    HUMANIZE_BYTES_BINARY = %i[bytes kibibytes mebibytes gibibytes tebibytes pebibytes].freeze
 
     # Convert a value from one unit to another
     #
@@ -115,8 +205,8 @@ module Philiprehberger
 
       return convert_temperature(value, from, to) if temperature_unit?(from) || temperature_unit?(to)
 
-      from_category = category_for(from)
-      to_category = category_for(to)
+      from_category = internal_category_for(from)
+      to_category = internal_category_for(to)
 
       raise Error, "unknown unit: #{from}" unless from_category
       raise Error, "unknown unit: #{to}" unless to_category
@@ -172,8 +262,83 @@ module Philiprehberger
       "#{value.round(precision)} #{abbr}"
     end
 
-    # @api private
+    # Return the category a unit belongs to.
+    #
+    # @param unit [Symbol, String] the unit name
+    # @return [Symbol, nil] the category symbol, or nil if unknown
     def self.category_for(unit)
+      unit_sym = unit.to_sym
+      return :temperature if TEMPERATURE_UNITS.include?(unit_sym)
+
+      internal_category_for(unit_sym)
+    end
+
+    # Parse a string like "5 km", "3.14kg", or "72°F" into [value, unit_symbol].
+    #
+    # @param string [String] the string to parse
+    # @return [Array(Float, Symbol)] a two-element array: [value, canonical unit symbol]
+    # @raise [Error] if the string cannot be parsed or the unit is unknown
+    def self.parse(string)
+      raise Error, 'value must be a string' unless string.is_a?(String)
+
+      trimmed = string.strip
+      raise Error, 'cannot parse empty string' if trimmed.empty?
+
+      match = trimmed.match(/\A(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)\s*(.+?)\z/)
+      raise Error, "cannot parse: #{string.inspect}" unless match
+
+      value = Float(match[1])
+      token = match[2].strip.downcase
+      unit = ALIASES[token]
+      raise Error, "unknown unit: #{match[2]}" unless unit
+
+      [value, unit]
+    end
+
+    # Parse a string and convert it to another unit in one step.
+    #
+    # @param string [String] the input, e.g. "5 km"
+    # @param to [Symbol, String] the target unit
+    # @return [Float] the converted numeric value
+    # @raise [Error] if the string cannot be parsed or units are incompatible
+    def self.convert_str(string, to:)
+      value, from = parse(string)
+      convert(value, from: from, to: to)
+    end
+
+    # Auto-scale a byte count to a human-readable string.
+    #
+    # @param bytes [Numeric] the byte count (may be negative)
+    # @param binary [Boolean] if true, use IEC (KiB/MiB/...); if false, SI (kB/MB/...)
+    # @param precision [Integer] decimal places in the output (default: 2)
+    # @return [String] formatted string, e.g. "1.50 MB" or "1.50 MiB"
+    # @raise [Error] if bytes is not numeric or precision is negative
+    def self.humanize_bytes(bytes, binary: false, precision: 2)
+      raise Error, 'bytes must be numeric' unless bytes.is_a?(Numeric)
+      raise Error, 'precision must be a non-negative integer' unless precision.is_a?(Integer) && precision >= 0
+
+      sign = bytes.negative? ? -1 : 1
+      abs = bytes.abs.to_f
+      units = binary ? HUMANIZE_BYTES_BINARY : HUMANIZE_BYTES_DECIMAL
+      step = binary ? 1024.0 : 1000.0
+
+      unit = units.first
+      value = abs
+      units.each_with_index do |candidate, idx|
+        threshold = step**idx
+        next_threshold = step**(idx + 1)
+        next unless abs < next_threshold || idx == units.length - 1
+
+        unit = candidate
+        value = abs / threshold
+        break
+      end
+
+      self.format(sign * value, unit, precision: precision)
+    end
+
+    # @api private
+    def self.internal_category_for(unit)
       CATEGORY_MAP.each do |cat, factors|
         next if cat == :temperature
 
@@ -216,6 +381,7 @@ module Philiprehberger
       end
     end
 
-    private_class_method :category_for, :temperature_unit?, :convert_temperature, :to_celsius, :from_celsius
+    private_class_method :internal_category_for, :temperature_unit?, :convert_temperature,
+                         :to_celsius, :from_celsius
   end
 end

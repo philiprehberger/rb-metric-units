@@ -180,7 +180,7 @@ RSpec.describe Philiprehberger::MetricUnits do
 
   describe '.categories' do
     it 'returns all categories' do
-      expect(described_class.categories).to eq(%i[length weight volume temperature speed pressure energy])
+      expect(described_class.categories).to eq(%i[length weight volume temperature speed pressure energy data])
     end
 
     it 'includes speed category' do
@@ -193,6 +193,10 @@ RSpec.describe Philiprehberger::MetricUnits do
 
     it 'includes energy category' do
       expect(described_class.categories).to include(:energy)
+    end
+
+    it 'includes data category' do
+      expect(described_class.categories).to include(:data)
     end
   end
 
@@ -223,6 +227,12 @@ RSpec.describe Philiprehberger::MetricUnits do
 
     it 'returns energy units' do
       expect(described_class.units_for(:energy)).to eq(%i[joules kilojoules calories kilocalories watt_hours kilowatt_hours btu])
+    end
+
+    it 'returns data units' do
+      expect(described_class.units_for(:data)).to eq(
+        %i[bytes kilobytes megabytes gigabytes terabytes petabytes kibibytes mebibytes gibibytes tebibytes pebibytes]
+      )
     end
 
     it 'raises for unknown category' do
@@ -492,6 +502,224 @@ RSpec.describe Philiprehberger::MetricUnits do
 
     it 'raises for incompatible categories' do
       expect { described_class.convert(1, from: :kg, to: :m) }.to raise_error(described_class::Error, /cannot convert/)
+    end
+  end
+
+  describe 'data unit conversions' do
+    it 'converts gigabytes to megabytes using SI factors' do
+      expect(described_class.convert(1, from: :gigabytes, to: :megabytes)).to be_within(0.001).of(1000.0)
+    end
+
+    it 'converts gibibytes to mebibytes using IEC factors' do
+      expect(described_class.convert(1, from: :gibibytes, to: :mebibytes)).to be_within(0.001).of(1024.0)
+    end
+
+    it 'converts kibibytes to bytes' do
+      expect(described_class.convert(1, from: :kibibytes, to: :bytes)).to be_within(0.001).of(1024.0)
+    end
+
+    it 'converts terabytes to bytes' do
+      expect(described_class.convert(1, from: :terabytes, to: :bytes)).to be_within(0.001).of(1_000_000_000_000.0)
+    end
+
+    it 'converts across SI and IEC in the same category' do
+      expect(described_class.convert(1024, from: :bytes, to: :kibibytes)).to be_within(0.001).of(1.0)
+      expect(described_class.convert(1000, from: :bytes, to: :kilobytes)).to be_within(0.001).of(1.0)
+    end
+
+    it 'raises when data is mixed with incompatible categories' do
+      expect { described_class.convert(1, from: :kilobytes, to: :km) }.to raise_error(described_class::Error, /cannot convert/)
+    end
+  end
+
+  describe '.category_for' do
+    it 'returns the category for a length unit' do
+      expect(described_class.category_for(:km)).to eq(:length)
+    end
+
+    it 'returns the category for a weight unit' do
+      expect(described_class.category_for(:kg)).to eq(:weight)
+    end
+
+    it 'returns the category for a volume unit' do
+      expect(described_class.category_for(:liters)).to eq(:volume)
+    end
+
+    it 'returns :temperature for temperature units' do
+      expect(described_class.category_for(:celsius)).to eq(:temperature)
+      expect(described_class.category_for(:fahrenheit)).to eq(:temperature)
+      expect(described_class.category_for(:kelvin)).to eq(:temperature)
+    end
+
+    it 'returns the category for a speed unit' do
+      expect(described_class.category_for(:miles_per_hour)).to eq(:speed)
+    end
+
+    it 'returns the category for a pressure unit' do
+      expect(described_class.category_for(:psi)).to eq(:pressure)
+    end
+
+    it 'returns the category for an energy unit' do
+      expect(described_class.category_for(:joules)).to eq(:energy)
+    end
+
+    it 'returns the category for a data unit' do
+      expect(described_class.category_for(:gigabytes)).to eq(:data)
+      expect(described_class.category_for(:mebibytes)).to eq(:data)
+    end
+
+    it 'accepts string units' do
+      expect(described_class.category_for('kg')).to eq(:weight)
+    end
+
+    it 'returns nil for an unknown unit' do
+      expect(described_class.category_for(:parsecs)).to be_nil
+    end
+  end
+
+  describe '.parse' do
+    it 'parses a value with a space separator' do
+      expect(described_class.parse('5 km')).to eq([5.0, :km])
+    end
+
+    it 'parses a value with no space' do
+      expect(described_class.parse('3.14kg')).to eq([3.14, :kg])
+    end
+
+    it 'parses a negative value' do
+      expect(described_class.parse('-10 celsius')).to eq([-10.0, :celsius])
+    end
+
+    it 'parses with scientific notation' do
+      expect(described_class.parse('1.5e3 m')).to eq([1500.0, :m])
+    end
+
+    it 'parses a plural unit name' do
+      expect(described_class.parse('2 miles')).to eq([2.0, :miles])
+    end
+
+    it 'parses a singular unit name' do
+      expect(described_class.parse('1 mile')).to eq([1.0, :miles])
+    end
+
+    it 'parses abbreviations' do
+      expect(described_class.parse('100 mph')).to eq([100.0, :miles_per_hour])
+      expect(described_class.parse('5 MB')).to eq([5.0, :megabytes])
+      expect(described_class.parse('5 MiB')).to eq([5.0, :mebibytes])
+    end
+
+    it 'parses the degree symbol for temperature' do
+      expect(described_class.parse("72 \u00B0F")).to eq([72.0, :fahrenheit])
+    end
+
+    it 'strips surrounding whitespace' do
+      expect(described_class.parse('  42   kg  ')).to eq([42.0, :kg])
+    end
+
+    it 'is case-insensitive on the unit' do
+      expect(described_class.parse('5 KG')).to eq([5.0, :kg])
+    end
+
+    it 'raises for an empty string' do
+      expect { described_class.parse('') }.to raise_error(described_class::Error, /empty/)
+    end
+
+    it 'raises for a non-string argument' do
+      expect { described_class.parse(42) }.to raise_error(described_class::Error, /string/)
+    end
+
+    it 'raises for an unparseable string' do
+      expect { described_class.parse('just words') }.to raise_error(described_class::Error)
+    end
+
+    it 'raises for an unknown unit token' do
+      expect { described_class.parse('5 parsecs') }.to raise_error(described_class::Error, /parsecs/)
+    end
+  end
+
+  describe '.convert_str' do
+    it 'parses and converts in one step' do
+      expect(described_class.convert_str('5 km', to: :miles)).to be_within(0.01).of(3.107)
+    end
+
+    it 'converts data units' do
+      expect(described_class.convert_str('5 MB', to: :bytes)).to be_within(0.001).of(5_000_000.0)
+    end
+
+    it 'converts temperature strings' do
+      expect(described_class.convert_str('32 F', to: :celsius)).to be_within(0.01).of(0.0)
+    end
+
+    it 'accepts a string target unit' do
+      expect(described_class.convert_str('1 mile', to: 'km')).to be_within(0.01).of(1.609)
+    end
+
+    it 'raises on incompatible units' do
+      expect { described_class.convert_str('5 km', to: :kg) }.to raise_error(described_class::Error, /cannot convert/)
+    end
+
+    it 'raises on unparseable input' do
+      expect { described_class.convert_str('abc', to: :m) }.to raise_error(described_class::Error)
+    end
+  end
+
+  describe '.humanize_bytes' do
+    it 'formats bytes under 1000 as bytes (SI)' do
+      expect(described_class.humanize_bytes(512)).to eq('512.0 B')
+    end
+
+    it 'formats kilobytes with default precision' do
+      expect(described_class.humanize_bytes(1500)).to eq('1.5 kB')
+    end
+
+    it 'formats megabytes' do
+      expect(described_class.humanize_bytes(1_500_000)).to eq('1.5 MB')
+    end
+
+    it 'formats gigabytes' do
+      expect(described_class.humanize_bytes(2_500_000_000, precision: 1)).to eq('2.5 GB')
+    end
+
+    it 'formats petabytes at the top of the scale' do
+      expect(described_class.humanize_bytes(5_000_000_000_000_000, precision: 0)).to eq('5 PB')
+    end
+
+    it 'caps at petabytes for values beyond the scale' do
+      result = described_class.humanize_bytes(10_000_000_000_000_000, precision: 0)
+      expect(result).to end_with(' PB')
+    end
+
+    it 'formats in binary mode' do
+      expect(described_class.humanize_bytes(1024, binary: true)).to eq('1.0 KiB')
+      expect(described_class.humanize_bytes(1_048_576, binary: true)).to eq('1.0 MiB')
+    end
+
+    it 'formats binary mode with custom precision' do
+      expect(described_class.humanize_bytes(1_500_000, binary: true, precision: 2)).to eq('1.43 MiB')
+    end
+
+    it 'handles zero' do
+      expect(described_class.humanize_bytes(0)).to eq('0.0 B')
+    end
+
+    it 'handles negative values' do
+      expect(described_class.humanize_bytes(-1500)).to eq('-1.5 kB')
+    end
+
+    it 'accepts precision: 0' do
+      expect(described_class.humanize_bytes(1_500_000, precision: 0)).to eq('2 MB')
+    end
+
+    it 'raises for non-numeric input' do
+      expect { described_class.humanize_bytes('1MB') }.to raise_error(described_class::Error, /numeric/)
+    end
+
+    it 'raises for negative precision' do
+      expect { described_class.humanize_bytes(100, precision: -1) }.to raise_error(described_class::Error, /precision/)
+    end
+
+    it 'raises for non-integer precision' do
+      expect { described_class.humanize_bytes(100, precision: 2.5) }.to raise_error(described_class::Error, /precision/)
     end
   end
 end
