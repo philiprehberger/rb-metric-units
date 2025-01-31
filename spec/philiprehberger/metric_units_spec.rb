@@ -722,4 +722,60 @@ RSpec.describe Philiprehberger::MetricUnits do
       expect { described_class.humanize_bytes(100, precision: 2.5) }.to raise_error(described_class::Error, /precision/)
     end
   end
+
+  describe '.convert_and_format' do
+    it 'converts meters to kilometers and formats with the target abbreviation' do
+      expect(described_class.convert_and_format(5000, from: :m, to: :km)).to eq('5.00 km')
+    end
+
+    it 'respects the precision parameter' do
+      expect(described_class.convert_and_format(5000, from: :m, to: :km, precision: 4)).to eq('5.0000 km')
+    end
+
+    it 'uses a default precision of 2' do
+      expect(described_class.convert_and_format(1, from: :kg, to: :lbs)).to eq('2.20 lb')
+    end
+
+    it 'formats temperature conversions with the degree abbreviation' do
+      expect(described_class.convert_and_format(0, from: :celsius, to: :fahrenheit)).to eq("32.00 \u00B0F")
+    end
+
+    it 'accepts precision: 0' do
+      expect(described_class.convert_and_format(5000, from: :m, to: :km, precision: 0)).to eq('5 km')
+    end
+
+    it 'accepts string units' do
+      expect(described_class.convert_and_format(5000, from: 'm', to: 'km')).to eq('5.00 km')
+    end
+
+    it 'raises for an invalid from-unit' do
+      expect do
+        described_class.convert_and_format(5, from: :parsecs, to: :km)
+      end.to raise_error(described_class::Error, /parsecs/)
+    end
+
+    it 'raises for an invalid to-unit' do
+      expect do
+        described_class.convert_and_format(5, from: :km, to: :parsecs)
+      end.to raise_error(described_class::Error)
+    end
+
+    it 'raises for incompatible unit categories' do
+      expect do
+        described_class.convert_and_format(5, from: :km, to: :kg)
+      end.to raise_error(described_class::Error, /cannot convert/)
+    end
+
+    it 'raises for a non-numeric value' do
+      expect do
+        described_class.convert_and_format('five', from: :m, to: :km)
+      end.to raise_error(described_class::Error, /numeric/)
+    end
+
+    it 'raises for a negative precision' do
+      expect do
+        described_class.convert_and_format(5000, from: :m, to: :km, precision: -1)
+      end.to raise_error(described_class::Error, /precision/)
+    end
+  end
 end

@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-04-15
+
+### Added
+- `convert_and_format` method that converts a value between units and returns a formatted string with the target unit abbreviation (e.g. `"5.00 km"`), with a configurable `precision` parameter
+
 ## [0.3.0] - 2026-04-15
 
 ### Added
@@ -62,7 +67,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Category listing via `categories`
 - Unit discovery via `units_for(category)`
 
-[Unreleased]: https://github.com/philiprehberger/rb-metric-units/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/philiprehberger/rb-metric-units/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/philiprehberger/rb-metric-units/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/philiprehberger/rb-metric-units/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/philiprehberger/rb-metric-units/compare/v0.1.4...v0.2.0
 [0.1.4]: https://github.com/philiprehberger/rb-metric-units/compare/v0.1.3...v0.1.4
