@@ -295,6 +295,21 @@ module Philiprehberger
       internal_category_for(unit_sym)
     end
 
+    # Check whether two units belong to the same category and can be converted
+    # between one another.
+    #
+    # Useful for pair-validating units before calling {.convert}. Returns
+    # +false+ if either unit is unknown.
+    #
+    # @param unit1 [Symbol, String] the first unit name
+    # @param unit2 [Symbol, String] the second unit name
+    # @return [Boolean] true iff both units belong to the same category
+    def self.compatible?(unit1, unit2)
+      cat1 = category_for(unit1)
+      cat2 = category_for(unit2)
+      !cat1.nil? && cat1 == cat2
+    end
+
     # Parse a string like "5 km", "3.14kg", or "72°F" into [value, unit_symbol].
     #
     # @param string [String] the string to parse

@@ -577,6 +577,54 @@ RSpec.describe Philiprehberger::MetricUnits do
     end
   end
 
+  describe '.compatible?' do
+    it 'returns true for units in the same length category' do
+      expect(described_class.compatible?(:m, :km)).to be true
+    end
+
+    it 'returns true for units in the same weight category' do
+      expect(described_class.compatible?(:kg, :lbs)).to be true
+    end
+
+    it 'returns false for units in different categories' do
+      expect(described_class.compatible?(:m, :kg)).to be false
+    end
+
+    it 'returns false when the first unit is unknown' do
+      expect(described_class.compatible?(:parsecs, :km)).to be false
+    end
+
+    it 'returns false when the second unit is unknown' do
+      expect(described_class.compatible?(:km, :parsecs)).to be false
+    end
+
+    it 'returns false when both units are unknown' do
+      expect(described_class.compatible?(:parsecs, :lightyears)).to be false
+    end
+
+    it 'resolves string aliases on both sides to the same category' do
+      expect(described_class.compatible?('kg', 'lbs')).to be true
+    end
+
+    it 'returns true for temperature units amongst themselves' do
+      expect(described_class.compatible?(:celsius, :fahrenheit)).to be true
+      expect(described_class.compatible?(:celsius, :kelvin)).to be true
+      expect(described_class.compatible?(:fahrenheit, :kelvin)).to be true
+    end
+
+    it 'returns false when mixing temperature with a non-temperature unit' do
+      expect(described_class.compatible?(:celsius, :m)).to be false
+    end
+
+    it 'returns true for identical units' do
+      expect(described_class.compatible?(:m, :m)).to be true
+    end
+
+    it 'returns true for data units including SI/IEC mixes' do
+      expect(described_class.compatible?(:gigabytes, :mebibytes)).to be true
+    end
+  end
+
   describe '.parse' do
     it 'parses a value with a space separator' do
       expect(described_class.parse('5 km')).to eq([5.0, :km])
