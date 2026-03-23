@@ -143,4 +143,118 @@ RSpec.describe Philiprehberger::MetricUnits do
       expect(described_class.units_for('length')).to eq(%i[km m cm mm miles yards feet inches])
     end
   end
+
+  describe 'roundtrip conversion accuracy' do
+    it 'km -> miles -> km is accurate' do
+      result = described_class.convert(
+        described_class.convert(10, from: :km, to: :miles),
+        from: :miles, to: :km
+      )
+      expect(result).to be_within(0.001).of(10.0)
+    end
+
+    it 'celsius -> fahrenheit -> celsius is accurate' do
+      result = described_class.convert(
+        described_class.convert(37.0, from: :celsius, to: :fahrenheit),
+        from: :fahrenheit, to: :celsius
+      )
+      expect(result).to be_within(0.001).of(37.0)
+    end
+
+    it 'kg -> lbs -> kg is accurate' do
+      result = described_class.convert(
+        described_class.convert(5, from: :kg, to: :lbs),
+        from: :lbs, to: :kg
+      )
+      expect(result).to be_within(0.001).of(5.0)
+    end
+
+    it 'liters -> gallons -> liters is accurate' do
+      result = described_class.convert(
+        described_class.convert(3, from: :liters, to: :gallons),
+        from: :gallons, to: :liters
+      )
+      expect(result).to be_within(0.001).of(3.0)
+    end
+  end
+
+  describe 'zero value conversion' do
+    it 'converts zero km to zero miles' do
+      expect(described_class.convert(0, from: :km, to: :miles)).to eq(0.0)
+    end
+
+    it 'converts zero celsius to 32 fahrenheit' do
+      expect(described_class.convert(0, from: :celsius, to: :fahrenheit)).to be_within(0.01).of(32.0)
+    end
+
+    it 'converts zero kg to zero lbs' do
+      expect(described_class.convert(0, from: :kg, to: :lbs)).to eq(0.0)
+    end
+  end
+
+  describe 'negative values' do
+    it 'converts negative celsius to fahrenheit' do
+      expect(described_class.convert(-40, from: :celsius, to: :fahrenheit)).to be_within(0.01).of(-40.0)
+    end
+
+    it 'converts negative length values' do
+      result = described_class.convert(-5, from: :km, to: :m)
+      expect(result).to be_within(0.001).of(-5000.0)
+    end
+  end
+
+  describe 'very large and small values' do
+    it 'converts a very large distance' do
+      result = described_class.convert(1_000_000, from: :km, to: :m)
+      expect(result).to be_within(0.001).of(1_000_000_000.0)
+    end
+
+    it 'converts a very small weight' do
+      result = described_class.convert(0.001, from: :mg, to: :g)
+      expect(result).to be_within(0.000001).of(0.000001)
+    end
+  end
+
+  describe 'additional unit conversions' do
+    it 'converts yards to feet' do
+      expect(described_class.convert(1, from: :yards, to: :feet)).to be_within(0.001).of(3.0)
+    end
+
+    it 'converts quarts to pints' do
+      expect(described_class.convert(1, from: :quarts, to: :pints)).to be_within(0.01).of(2.0)
+    end
+
+    it 'converts kelvin to fahrenheit' do
+      expect(described_class.convert(373.15, from: :kelvin, to: :fahrenheit)).to be_within(0.01).of(212.0)
+    end
+
+    it 'converts mg to kg' do
+      expect(described_class.convert(1_000_000, from: :mg, to: :kg)).to be_within(0.001).of(1.0)
+    end
+
+    it 'converts inches to cm' do
+      expect(described_class.convert(1, from: :inches, to: :cm)).to be_within(0.001).of(2.54)
+    end
+  end
+
+  describe 'string unit arguments' do
+    it 'accepts string units' do
+      result = described_class.convert(1, from: 'km', to: 'm')
+      expect(result).to be_within(0.001).of(1000.0)
+    end
+  end
+
+  describe 'error messages' do
+    it 'includes the unknown unit name in error' do
+      expect { described_class.convert(1, from: :parsecs, to: :m) }.to raise_error(described_class::Error, /parsecs/)
+    end
+
+    it 'raises for non-numeric input' do
+      expect { described_class.convert('five', from: :km, to: :m) }.to raise_error(described_class::Error, /numeric/)
+    end
+
+    it 'raises for incompatible categories' do
+      expect { described_class.convert(1, from: :kg, to: :m) }.to raise_error(described_class::Error, /cannot convert/)
+    end
+  end
 end
