@@ -62,11 +62,18 @@ Philiprehberger::MetricUnits.units_for(:length)
 
 ## API
 
-| Method | Description |
-|--------|-------------|
-| `.convert(value, from:, to:)` | Convert a value between units |
-| `.categories` | Return all available categories |
-| `.units_for(category)` | Return all units for a category |
+| Method / Constant | Description |
+|--------------------|-------------|
+| `.convert(value, from:, to:)` | Convert a numeric value between compatible units |
+| `.categories` | Return all available category names as symbols |
+| `.units_for(category)` | Return all unit symbols for a given category |
+| `Error` | Custom error class raised for unknown or incompatible units |
+| `VERSION` | Gem version string |
+| `LENGTH_FACTORS` | Hash mapping length unit symbols to meter conversion factors |
+| `WEIGHT_FACTORS` | Hash mapping weight unit symbols to gram conversion factors |
+| `VOLUME_FACTORS` | Hash mapping volume unit symbols to liter conversion factors |
+| `TEMPERATURE_UNITS` | Array of supported temperature unit symbols |
+| `CATEGORY_MAP` | Hash mapping category names to their factor tables |
 
 ## Development
 
