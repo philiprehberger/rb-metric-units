@@ -134,7 +134,7 @@ module Philiprehberger
     def self.from_celsius(celsius, unit)
       case unit
       when :celsius then celsius
-      when :fahrenheit then celsius * 9.0 / 5.0 + 32
+      when :fahrenheit then (celsius * 9.0 / 5.0) + 32
       when :kelvin then celsius + 273.15
       end
     end
