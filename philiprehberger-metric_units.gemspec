@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
 
   spec.summary = 'Unit conversion for length, weight, temperature, and volume measurements'
   spec.description = 'Unit conversion library supporting length, weight, temperature, and volume categories ' \
-                       'with a simple convert API, category listing, and unit discovery.'
+                     'with a simple convert API, category listing, and unit discovery.'
   spec.homepage = 'https://philiprehberger.com/open-source-packages/ruby/philiprehberger-metric_units'
   spec.license = 'MIT'
 
