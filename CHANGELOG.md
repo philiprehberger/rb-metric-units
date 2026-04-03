@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-04-03
+
+### Added
+- Speed unit category (m/s, km/h, mph, knots, ft/s)
+- Pressure unit category (Pa, kPa, bar, psi, atm, mmHg)
+- Energy unit category (J, kJ, cal, kcal, Wh, kWh, BTU)
+- `abbreviation` method for standard unit abbreviations
+- `format` method for formatted output with precision control
+
 ## [0.1.4] - 2026-03-31
 
 ### Added

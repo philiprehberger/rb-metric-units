@@ -38,13 +38,66 @@ module Philiprehberger
       cups: 0.2365882365
     }.freeze
 
+    SPEED_FACTORS = {
+      meters_per_second: 1.0,
+      kilometers_per_hour: 1.0 / 3.6,
+      miles_per_hour: 0.44704,
+      knots: 0.514444,
+      feet_per_second: 0.3048
+    }.freeze
+
+    PRESSURE_FACTORS = {
+      pascals: 1.0,
+      kilopascals: 1000.0,
+      bar: 100_000.0,
+      psi: 6894.757,
+      atmospheres: 101_325.0,
+      mmhg: 133.322
+    }.freeze
+
+    ENERGY_FACTORS = {
+      joules: 1.0,
+      kilojoules: 1000.0,
+      calories: 4.184,
+      kilocalories: 4184.0,
+      watt_hours: 3600.0,
+      kilowatt_hours: 3_600_000.0,
+      btu: 1055.06
+    }.freeze
+
     TEMPERATURE_UNITS = %i[celsius fahrenheit kelvin].freeze
 
     CATEGORY_MAP = {
       length: LENGTH_FACTORS,
       weight: WEIGHT_FACTORS,
       volume: VOLUME_FACTORS,
-      temperature: nil
+      temperature: nil,
+      speed: SPEED_FACTORS,
+      pressure: PRESSURE_FACTORS,
+      energy: ENERGY_FACTORS
+    }.freeze
+
+    ABBREVIATIONS = {
+      # Length
+      km: 'km', m: 'm', cm: 'cm', mm: 'mm',
+      miles: 'mi', yards: 'yd', feet: 'ft', inches: 'in',
+      # Weight
+      kg: 'kg', g: 'g', mg: 'mg', lbs: 'lb', oz: 'oz',
+      # Volume
+      liters: 'L', ml: 'mL',
+      gallons: 'gal', quarts: 'qt', pints: 'pt', cups: 'cup',
+      # Temperature
+      celsius: "\u00B0C", fahrenheit: "\u00B0F", kelvin: 'K',
+      # Speed
+      meters_per_second: 'm/s', kilometers_per_hour: 'km/h',
+      miles_per_hour: 'mph', knots: 'kn', feet_per_second: 'ft/s',
+      # Pressure
+      pascals: 'Pa', kilopascals: 'kPa', bar: 'bar',
+      psi: 'psi', atmospheres: 'atm', mmhg: 'mmHg',
+      # Energy
+      joules: 'J', kilojoules: 'kJ', calories: 'cal',
+      kilocalories: 'kcal', watt_hours: 'Wh',
+      kilowatt_hours: 'kWh', btu: 'BTU'
     }.freeze
 
     # Convert a value from one unit to another
@@ -93,6 +146,30 @@ module Philiprehberger
       return TEMPERATURE_UNITS if category == :temperature
 
       CATEGORY_MAP[category].keys
+    end
+
+    # Return the standard abbreviation for a unit
+    #
+    # @param unit [Symbol, String] the unit name
+    # @return [String, nil] the abbreviation, or nil if unknown
+    def self.abbreviation(unit)
+      ABBREVIATIONS[unit.to_sym]
+    end
+
+    # Format a value with its unit abbreviation
+    #
+    # @param value [Numeric] the value to format
+    # @param unit [Symbol, String] the unit name
+    # @param precision [Integer] decimal places (default: 2)
+    # @return [String] formatted string, e.g. "3.14 kg"
+    # @raise [Error] if unit abbreviation is unknown
+    def self.format(value, unit, precision: 2)
+      raise Error, 'value must be numeric' unless value.is_a?(Numeric)
+
+      abbr = abbreviation(unit)
+      raise Error, "unknown unit abbreviation: #{unit}" unless abbr
+
+      "#{value.round(precision)} #{abbr}"
     end
 
     # @api private
