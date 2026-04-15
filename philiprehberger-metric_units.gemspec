@@ -8,9 +8,10 @@ Gem::Specification.new do |spec|
   spec.authors = ['Philip Rehberger']
   spec.email = ['me@philiprehberger.com']
 
-  spec.summary = 'Unit conversion for length, weight, temperature, volume, speed, pressure, and energy measurements'
+  spec.summary = 'Unit conversion for length, weight, temperature, volume, speed, pressure, energy, and data measurements'
   spec.description = 'Unit conversion library supporting length, weight, temperature, volume, speed, pressure, ' \
-                     'and energy categories with a simple convert API, unit abbreviations, and formatted output.'
+                     'energy, and data categories with a simple convert API, string parsing, ' \
+                     'byte humanization, unit abbreviations, and formatted output.'
   spec.homepage = 'https://philiprehberger.com/open-source-packages/ruby/philiprehberger-metric_units'
   spec.license = 'MIT'
 

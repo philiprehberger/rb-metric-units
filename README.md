@@ -4,7 +4,7 @@
 [![Gem Version](https://badge.fury.io/rb/philiprehberger-metric_units.svg)](https://rubygems.org/gems/philiprehberger-metric_units)
 [![Last updated](https://img.shields.io/github/last-commit/philiprehberger/rb-metric-units)](https://github.com/philiprehberger/rb-metric-units/commits/main)
 
-Unit conversion for length, weight, temperature, volume, speed, pressure, and energy measurements
+Unit conversion for length, weight, temperature, volume, speed, pressure, energy, and data measurements
 
 ## Requirements
 
@@ -80,6 +80,65 @@ Philiprehberger::MetricUnits.convert(1, from: :kilocalories, to: :kilojoules)
 # => 4.184
 ```
 
+### Data
+
+```ruby
+Philiprehberger::MetricUnits.convert(1, from: :gigabytes, to: :megabytes)
+# => 1000.0
+
+Philiprehberger::MetricUnits.convert(1, from: :gibibytes, to: :mebibytes)
+# => 1024.0
+```
+
+### Parsing Strings
+
+```ruby
+Philiprehberger::MetricUnits.parse("5 km")
+# => [5.0, :km]
+
+Philiprehberger::MetricUnits.parse("3.14kg")
+# => [3.14, :kg]
+
+Philiprehberger::MetricUnits.parse("72 °F")
+# => [72.0, :fahrenheit]
+```
+
+### Parse and Convert
+
+```ruby
+Philiprehberger::MetricUnits.convert_str("5 MB", to: :bytes)
+# => 5000000.0
+
+Philiprehberger::MetricUnits.convert_str("1 mile", to: :km)
+# => 1.609...
+```
+
+### Humanize Bytes
+
+```ruby
+Philiprehberger::MetricUnits.humanize_bytes(1_500_000)
+# => "1.5 MB"
+
+Philiprehberger::MetricUnits.humanize_bytes(1_500_000, binary: true)
+# => "1.43 MiB"
+
+Philiprehberger::MetricUnits.humanize_bytes(2_500_000_000, precision: 1)
+# => "2.5 GB"
+```
+
+### Category Lookup
+
+```ruby
+Philiprehberger::MetricUnits.category_for(:kg)
+# => :weight
+
+Philiprehberger::MetricUnits.category_for(:celsius)
+# => :temperature
+
+Philiprehberger::MetricUnits.category_for(:parsecs)
+# => nil
+```
+
 ### Abbreviations
 
 ```ruby
@@ -104,7 +163,7 @@ Philiprehberger::MetricUnits.format(100.5, :kilometers_per_hour)
 
 ```ruby
 Philiprehberger::MetricUnits.categories
-# => [:length, :weight, :volume, :temperature, :speed, :pressure, :energy]
+# => [:length, :weight, :volume, :temperature, :speed, :pressure, :energy, :data]
 
 Philiprehberger::MetricUnits.units_for(:length)
 # => [:km, :m, :cm, :mm, :miles, :yards, :feet, :inches]
@@ -115,6 +174,10 @@ Philiprehberger::MetricUnits.units_for(:length)
 | Method / Constant | Description |
 |--------------------|-------------|
 | `.convert(value, from:, to:)` | Convert a numeric value between compatible units |
+| `.convert_str(string, to:)` | Parse a string (e.g. `"5 km"`) and convert to the target unit |
+| `.parse(string)` | Parse a string into `[value, unit]` (e.g. `"5 km"` to `[5.0, :km]`) |
+| `.humanize_bytes(bytes, binary: false, precision: 2)` | Auto-scale a byte count to a human-readable string |
+| `.category_for(unit)` | Return the category a unit belongs to, or `nil` if unknown |
 | `.categories` | Return all available category names as symbols |
 | `.units_for(category)` | Return all unit symbols for a given category |
 | `.abbreviation(unit)` | Return the standard abbreviation for a unit (e.g., `"km/h"`) |
@@ -127,8 +190,10 @@ Philiprehberger::MetricUnits.units_for(:length)
 | `SPEED_FACTORS` | Hash mapping speed unit symbols to m/s conversion factors |
 | `PRESSURE_FACTORS` | Hash mapping pressure unit symbols to pascal conversion factors |
 | `ENERGY_FACTORS` | Hash mapping energy unit symbols to joule conversion factors |
+| `DATA_FACTORS` | Hash mapping data unit symbols to byte conversion factors (SI and IEC) |
 | `TEMPERATURE_UNITS` | Array of supported temperature unit symbols |
 | `ABBREVIATIONS` | Hash mapping unit symbols to abbreviation strings |
+| `ALIASES` | Hash mapping common tokens (plurals, abbreviations) to canonical unit symbols |
 | `CATEGORY_MAP` | Hash mapping category names to their factor tables |
 
 ## Development
