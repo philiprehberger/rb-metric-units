@@ -262,6 +262,28 @@ module Philiprehberger
       "#{value.round(precision)} #{abbr}"
     end
 
+    # Convert a value between units and return a formatted string in the target unit.
+    #
+    # Combines {.convert} and {.format} into a single call, using fixed-point
+    # formatting that preserves trailing zeros (e.g. precision 2 yields "5.00 km").
+    #
+    # @param value [Numeric] the value to convert
+    # @param from [Symbol, String] the source unit
+    # @param to [Symbol, String] the target unit
+    # @param precision [Integer] decimal places in the output (default: 2)
+    # @return [String] formatted string, e.g. "5.00 km"
+    # @raise [Error] if units are unknown, incompatible, value is non-numeric,
+    #   or precision is invalid
+    def self.convert_and_format(value, from:, to:, precision: 2)
+      raise Error, 'precision must be a non-negative integer' unless precision.is_a?(Integer) && precision >= 0
+
+      converted = convert(value, from: from, to: to)
+      abbr = abbreviation(to)
+      raise Error, "unknown unit abbreviation: #{to}" unless abbr
+
+      "#{Kernel.format("%.#{precision}f", converted)} #{abbr}"
+    end
+
     # Return the category a unit belongs to.
     #
     # @param unit [Symbol, String] the unit name

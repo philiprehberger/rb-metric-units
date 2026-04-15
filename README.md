@@ -159,6 +159,16 @@ Philiprehberger::MetricUnits.format(100.5, :kilometers_per_hour)
 # => "100.5 km/h"
 ```
 
+### Convert and Format
+
+```ruby
+Philiprehberger::MetricUnits.convert_and_format(5000, from: :m, to: :km)
+# => "5.00 km"
+
+Philiprehberger::MetricUnits.convert_and_format(1, from: :kg, to: :lbs, precision: 4)
+# => "2.2046 lb"
+```
+
 ### Discovering Units
 
 ```ruby
@@ -182,6 +192,7 @@ Philiprehberger::MetricUnits.units_for(:length)
 | `.units_for(category)` | Return all unit symbols for a given category |
 | `.abbreviation(unit)` | Return the standard abbreviation for a unit (e.g., `"km/h"`) |
 | `.format(value, unit, precision: 2)` | Format a value with its unit abbreviation (e.g., `"3.14 kg"`) |
+| `.convert_and_format(value, from:, to:, precision: 2)` | Convert a value and return a formatted string in the target unit (e.g., `"5.00 km"`) |
 | `Error` | Custom error class raised for unknown or incompatible units |
 | `VERSION` | Gem version string |
 | `LENGTH_FACTORS` | Hash mapping length unit symbols to meter conversion factors |
