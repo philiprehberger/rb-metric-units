@@ -826,4 +826,36 @@ RSpec.describe Philiprehberger::MetricUnits do
       end.to raise_error(described_class::Error, /precision/)
     end
   end
+
+  describe '.format_range' do
+    it 'joins the endpoints with an en-dash and the unit abbreviation' do
+      expect(described_class.format_range(5, 10, :km, precision: 0)).to eq("5\u201310 km")
+    end
+
+    it 'normalizes reversed ranges' do
+      expect(described_class.format_range(10, 5, :km, precision: 0)).to eq("5\u201310 km")
+    end
+
+    it 'collapses to a single value when both bounds round the same' do
+      expect(described_class.format_range(5.001, 5.002, :km, precision: 1)).to eq('5.0 km')
+    end
+
+    it 'respects precision' do
+      expect(described_class.format_range(1.2345, 2.3456, :km, precision: 2)).to eq("1.23\u20132.35 km")
+    end
+
+    it 'accepts a custom separator' do
+      expect(described_class.format_range(5, 10, :km, precision: 0, separator: ' to ')).to eq('5 to 10 km')
+    end
+
+    it 'raises for a non-numeric bound' do
+      expect { described_class.format_range('one', 10, :km) }
+        .to raise_error(described_class::Error, /numeric/)
+    end
+
+    it 'raises for an unknown unit' do
+      expect { described_class.format_range(1, 2, :parsecs) }
+        .to raise_error(described_class::Error, /parsecs/)
+    end
+  end
 end
