@@ -139,6 +139,13 @@ Philiprehberger::MetricUnits.category_for(:parsecs)
 # => nil
 ```
 
+### Compatibility check
+
+```ruby
+Philiprehberger::MetricUnits.compatible?(:m, :km) # => true
+Philiprehberger::MetricUnits.compatible?(:m, :kg) # => false
+```
+
 ### Abbreviations
 
 ```ruby
@@ -188,6 +195,7 @@ Philiprehberger::MetricUnits.units_for(:length)
 | `.parse(string)` | Parse a string into `[value, unit]` (e.g. `"5 km"` to `[5.0, :km]`) |
 | `.humanize_bytes(bytes, binary: false, precision: 2)` | Auto-scale a byte count to a human-readable string |
 | `.category_for(unit)` | Return the category a unit belongs to, or `nil` if unknown |
+| `.compatible?(unit1, unit2)` | Return true iff both units belong to the same category |
 | `.categories` | Return all available category names as symbols |
 | `.units_for(category)` | Return all unit symbols for a given category |
 | `.abbreviation(unit)` | Return the standard abbreviation for a unit (e.g., `"km/h"`) |
