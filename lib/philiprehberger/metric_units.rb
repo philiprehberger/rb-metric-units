@@ -284,6 +284,33 @@ module Philiprehberger
       "#{Kernel.format("%.#{precision}f", converted)} #{abbr}"
     end
 
+    # Format a value range with a shared unit, producing strings such as
+    # `"5-10 km"`. The range is normalized so the smaller value appears first
+    # and both endpoints are rounded to the requested `precision`. When both
+    # endpoints round to the same value the single value is returned.
+    #
+    # @param min [Numeric] the lower bound
+    # @param max [Numeric] the upper bound
+    # @param unit [Symbol, String] the unit shared by both bounds
+    # @param precision [Integer] decimal places (default: 2)
+    # @param separator [String] range separator (default: an en-dash)
+    # @return [String] the formatted range
+    # @raise [Error] if either bound is non-numeric or the unit is unknown
+    def self.format_range(min, max, unit, precision: 2, separator: '–')
+      raise Error, 'min must be numeric' unless min.is_a?(Numeric)
+      raise Error, 'max must be numeric' unless max.is_a?(Numeric)
+
+      abbr = abbreviation(unit)
+      raise Error, "unknown unit abbreviation: #{unit}" unless abbr
+
+      lo, hi = [min, max].minmax
+      lo_r = lo.round(precision)
+      hi_r = hi.round(precision)
+      return "#{lo_r} #{abbr}" if lo_r == hi_r
+
+      "#{lo_r}#{separator}#{hi_r} #{abbr}"
+    end
+
     # Return the category a unit belongs to.
     #
     # @param unit [Symbol, String] the unit name

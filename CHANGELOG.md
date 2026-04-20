@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-04-20
+
+### Added
+- `MetricUnits.format_range(min, max, unit, precision:, separator:)` — formats value ranges (e.g. `"5–10 km"`) with automatic ascending normalization, collapsing the output to a single value when both endpoints round identically.
+
 ## [0.5.0] - 2026-04-19
 
 ### Added
