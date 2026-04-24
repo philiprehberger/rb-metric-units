@@ -244,6 +244,28 @@ RSpec.describe Philiprehberger::MetricUnits do
     end
   end
 
+  describe '.all_units' do
+    it 'returns a hash whose keys match .categories' do
+      expect(described_class.all_units.keys).to eq(described_class.categories)
+    end
+
+    it 'returns values matching .units_for for each category' do
+      described_class.all_units.each do |cat, units|
+        expect(units).to eq(described_class.units_for(cat))
+      end
+    end
+
+    it 'includes temperature with the three absolute scales' do
+      expect(described_class.all_units[:temperature]).to eq(%i[celsius fahrenheit kelvin])
+    end
+
+    it 'returns a non-empty array for every category' do
+      described_class.all_units.each_value do |units|
+        expect(units).not_to be_empty
+      end
+    end
+  end
+
   describe 'roundtrip conversion accuracy' do
     it 'km -> miles -> km is accurate' do
       result = described_class.convert(

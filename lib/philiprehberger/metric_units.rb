@@ -238,6 +238,16 @@ module Philiprehberger
       CATEGORY_MAP[category].keys
     end
 
+    # Return a mapping of every category to its units.
+    #
+    # Equivalent to calling {units_for} for each entry in {categories}, but
+    # returned in a single call. Useful for populating UI pickers.
+    #
+    # @return [Hash{Symbol => Array<Symbol>}] category name to array of unit symbols
+    def self.all_units
+      categories.to_h { |cat| [cat, units_for(cat)] }
+    end
+
     # Return the standard abbreviation for a unit
     #
     # @param unit [Symbol, String] the unit name

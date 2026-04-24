@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-04-23
+
+### Added
+- `MetricUnits.all_units` — returns a hash mapping each category to its units, equivalent to calling `units_for` for every entry in `categories`. Useful for populating UI pickers and documentation.
+
 ## [0.6.0] - 2026-04-20
 
 ### Added

@@ -197,6 +197,9 @@ Philiprehberger::MetricUnits.categories
 
 Philiprehberger::MetricUnits.units_for(:length)
 # => [:km, :m, :cm, :mm, :miles, :yards, :feet, :inches]
+
+Philiprehberger::MetricUnits.all_units
+# => { length: [:km, :m, ...], weight: [:kg, :g, ...], temperature: [:celsius, :fahrenheit, :kelvin], ... }
 ```
 
 ## API
@@ -211,6 +214,7 @@ Philiprehberger::MetricUnits.units_for(:length)
 | `.compatible?(unit1, unit2)` | Return true iff both units belong to the same category |
 | `.categories` | Return all available category names as symbols |
 | `.units_for(category)` | Return all unit symbols for a given category |
+| `.all_units` | Return a hash mapping each category to its unit symbols |
 | `.abbreviation(unit)` | Return the standard abbreviation for a unit (e.g., `"km/h"`) |
 | `.format(value, unit, precision: 2)` | Format a value with its unit abbreviation (e.g., `"3.14 kg"`) |
 | `.convert_and_format(value, from:, to:, precision: 2)` | Convert a value and return a formatted string in the target unit (e.g., `"5.00 km"`) |
